@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard – Nexio</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: var(--white);
+            border-right: 1px solid #E2E8F0;
+            padding: 40px 24px;
+        }
+
+        .dashboard-content {
+            padding: 40px 60px;
+            background: #F4F7FE;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 24px;
+            box-shadow: var(--shadow-sm);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin: 8px 0;
+            color: var(--primary);
+        }
+
+        .table-card {
+            background: white;
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 40px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-admin {
+            background: #FEF2F2;
+            color: #991B1B;
+        }
+
+        .badge-agent {
+            background: #EFF6FF;
+            color: #1E40AF;
+        }
+
+        .badge-user {
+            background: #F0FDF4;
+            color: #166534;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <a href="index.html" class="logo"><i data-lucide="layers"></i><span>Admin HQ</span></a>
+            <div style="margin-top: 40px;">
+                <nav class="sidebar-links" style="display: flex; flex-direction: column; gap: 8px;">
+                    <a href="admin_dashboard.html" class="sidebar-link active"
+                        style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; text-decoration: none; color: var(--text-primary); font-weight: 500; background: #EEF2FF; color: var(--primary);"><i
+                            data-lucide="shield"></i> Dashboard</a>
+                    <a href="javascript:void(0)" onclick="filterUsers('USER')" class="sidebar-link" id="manageUsersLink"
+                        style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; text-decoration: none; color: var(--text-primary); font-weight: 500;"><i
+                            data-lucide="users"></i> Manage Users</a>
+                    <a href="javascript:void(0)" onclick="filterUsers('AGENT')" class="sidebar-link" id="manageAgentsLink"
+                        style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; text-decoration: none; color: var(--text-primary); font-weight: 500;"><i
+                            data-lucide="briefcase"></i> Manage Agents</a>
+                    <a href="index.html" class="sidebar-link"
+                        style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; text-decoration: none; color: var(--text-primary); font-weight: 500;"><i
+                            data-lucide="globe"></i> Public View</a>
+                </nav>
+            </div>
+            <div style="margin-top: auto;">
+                <button onclick="logout()" class="btn btn-white" style="width: 100%; border: 1px solid #E2E8F0;">Log
+                    Out</button>
+            </div>
+        </aside>
+
+        <main class="dashboard-content" style="padding: 40px 60px; background: #F4F7FE;">
+            <header style="margin-bottom: 40px;">
+                <div id="adminGreeting"
+                    style="font-weight: 700; color: var(--primary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
+                    Welcome, Admin</div>
+                <h1 id="mainTitle">Platform <span class="text-gradient">Analysis</span></h1>
+                <p id="mainDesc" style="color: var(--text-secondary);">Real-time visibility across all services, agents and users.</p>
+            </header>
+
+            <!-- Stats -->
+            <div id="statsSection">
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <h3>-</h3>
+                        <p>Total Tickets</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>-</h3>
+                        <p>Active Users</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>-</h3>
+                        <p>Active Agents</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>-</h3>
+                        <p>Services</p>
+                    </div>
+                </div>
+
+                <!-- Operations Log (Only for Dashboard Dashboard) -->
+                <div class="table-card">
+                    <h3>Global Operations Log</h3>
+                    <div style="overflow-x: auto; margin-top: 20px;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Service</th>
+                                    <th>Ticket</th>
+                                    <th>Status</th>
+                                    <th>Date/Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ticketLogBody">
+                                <!-- Data -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Management Sections -->
+            <div class="table-card" id="userManagementSection">
+                <h3 id="userTableTitle">System Users & Agents</h3>
+                <div style="overflow-x: auto; margin-top: 20px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Contact</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userListBody">
+                            <!-- Data -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/script.js"></script>
+    <script>
+        lucide.createIcons();
+        let allUsers = [];
+
+        async function loadAdminData() {
+            try {
+                // Update Greeting
+                const user = JSON.parse(localStorage.getItem('user'));
+                if (user) document.getElementById('adminGreeting').innerText = `Welcome, ${user.name}`;
+
+                // Fetch Stats
+                const statsRes = await fetch('/api/admin/stats');
+                if (!statsRes.ok) throw new Error("Unauthorized");
+                const stats = await statsRes.json();
+
+                document.getElementById('statsGrid').innerHTML = `
+                    <div class="stat-card"><h3>${stats.totalTickets}</h3><p>Total Tickets</p></div>
+                    <div class="stat-card"><h3>${stats.totalUsers}</h3><p>Registered Users</p></div>
+                    <div class="stat-card"><h3>${stats.totalAgents}</h3><p>Agents On-duty</p></div>
+                    <div class="stat-card"><h3>${stats.totalServices}</h3><p>Active Services</p></div>
+                `;
+
+                // Fetch Tickets
+                const ticketsRes = await fetch('/api/admin/tickets');
+                const tickets = await ticketsRes.json();
+                document.getElementById('ticketLogBody').innerHTML = tickets.map(t => `
+                    <tr>
+                        <td>${t.user ? t.user.name : '<i>Virtual User</i>'}</td>
+                        <td>${t.service ? t.service.name : 'Unknown Service'}</td>
+                        <td style="font-weight:700;">${t.queueNumber}</td>
+                        <td><span class="status-pill status-${(t.status || 'waiting').toLowerCase()}">${t.status}</span></td>
+                        <td>${t.bookingDate ? new Date(t.bookingDate).toLocaleString() : '---'}</td>
+                    </tr>
+                `).join('');
+
+                // Fetch All Users for initial load
+                const usersRes = await fetch('/api/admin/users');
+                allUsers = await usersRes.json();
+                renderUserList(allUsers);
+
+            } catch (err) {
+                console.error(err);
+                alert("Please login as Admin!");
+                window.location.href = 'admin_login.html';
+            }
+        }
+
+        function renderUserList(users) {
+            document.getElementById('userListBody').innerHTML = users.map(u => `
+                <tr>
+                    <td style="font-weight:600;">${u.name || '<i>Unnamed User</i>'}</td>
+                    <td>${u.email}</td>
+                    <td><span class="badge badge-${(u.role || 'USER').toLowerCase()}">${u.role || 'USER'}</span></td>
+                    <td>${u.phone || '---'}</td>
+                    <td>
+                        <span class="badge" style="background: ${u.blocked ? '#FEF2F2' : '#F0FDF4'}; color: ${u.blocked ? '#991B1B' : '#166534'}">
+                            ${u.blocked ? 'BLOCKED' : 'ACTIVE'}
+                        </span>
+                    </td>
+                    <td>
+                        <button onclick="toggleBlock(${u.id})" class="btn" style="padding: 4px 12px; font-size: 0.8rem; background: ${u.blocked ? '#10B981' : '#EF4444'}; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                            ${u.blocked ? 'Unblock' : 'Block'}
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterUsers(role) {
+            // Update UI State
+            document.getElementById('statsSection').style.display = 'none';
+            document.getElementById('mainTitle').innerHTML = `Manage <span class="text-gradient">${role === 'USER' ? 'Users' : 'Agents'}</span>`;
+            document.getElementById('mainDesc').innerText = `Admin control panel for all registered ${role.toLowerCase()}s.`;
+            document.getElementById('userTableTitle').innerText = `${role === 'USER' ? 'User' : 'Agent'} Database`;
+
+            // Active link styling
+            document.querySelectorAll('.sidebar-link').forEach(l => l.style.background = 'none');
+            document.querySelectorAll('.sidebar-link').forEach(l => l.style.color = 'var(--text-primary)');
+            const activeLink = document.getElementById(role === 'USER' ? 'manageUsersLink' : 'manageAgentsLink');
+            activeLink.style.background = '#EEF2FF';
+            activeLink.style.color = 'var(--primary)';
+
+            // Filter data
+            const filtered = allUsers.filter(u => u.role === role);
+            renderUserList(filtered);
+            
+            // Re-create icons for any new buttons
+            lucide.createIcons();
+        }
+
+        async function toggleBlock(userId) {
+            if (!confirm("Are you sure you want to change this user's account status?")) return;
+            
+            try {
+                const res = await fetch(`/api/admin/users/${userId}/toggle-block`, {
+                    method: 'POST'
+                });
+                if (!res.ok) {
+                    const err = await res.text();
+                    throw new Error(err);
+                }
+                
+                const result = await res.json();
+                alert(result.message);
+                
+                // Refresh data
+                const usersRes = await fetch('/api/admin/users');
+                allUsers = await usersRes.json();
+                
+                // Keep current filter if any
+                const currentTitle = document.getElementById('userTableTitle').innerText;
+                if (currentTitle.includes('User')) {
+                    renderUserList(allUsers.filter(u => u.role === 'USER'));
+                } else if (currentTitle.includes('Agent')) {
+                    renderUserList(allUsers.filter(u => u.role === 'AGENT'));
+                } else {
+                    renderUserList(allUsers);
+                }
+            } catch (err) {
+                alert("Error: " + err.message);
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            localStorage.removeItem('user');
+            window.location.href = 'index.html';
+        }
+
+        loadAdminData();
+    </script>
+</body>
+
+</html>

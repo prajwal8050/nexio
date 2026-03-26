@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexio HQ – Administrative Access</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            background: radial-gradient(circle at 50% 50%, #1a1c2c 0%, #0a0b14 100%);
+            color: white;
+            overflow: hidden;
+        }
+
+        .hq-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .hq-glow {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: var(--primary);
+            filter: blur(150px);
+            opacity: 0.2;
+            pointer-events: none;
+        }
+
+        .admin-auth-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 60px;
+            border-radius: 40px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: slideIn 0.8s ease;
+        }
+
+        .admin-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ef4444, #991b1b);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 32px;
+            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .admin-form-control {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            width: 100%;
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-top: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .admin-form-control:focus {
+            outline: none;
+            border-color: #ef4444;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .admin-label {
+            display: block;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hq-container">
+        <div class="hq-glow"></div>
+        <div class="admin-auth-card">
+            <div style="text-align: left; margin-bottom: 40px;">
+                <div class="admin-icon" style="margin: 0 0 24px 0;">
+                    <i data-lucide="shield-check" style="width: 40px; height: 40px; color: white;"></i>
+                </div>
+                <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -1px; color: white; line-height: 1.1;">
+                    Administrator Access</h1>
+                <p style="color: #94a3b8; margin-top: 12px; font-weight: 500;">Authorized Personnel Only</p>
+            </div>
+
+            <form id="loginForm">
+                <div style="margin-bottom: 24px;">
+                    <label class="admin-label">Admin ID / Email</label>
+                    <input type="email" id="email" class="admin-form-control" placeholder="admin@nexio.com" required>
+                </div>
+                <div style="margin-bottom: 32px;">
+                    <label class="admin-label">Access Token</label>
+                    <input type="password" id="password" class="admin-form-control" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary"
+                    style="width: 100%; height: 56px; background: #ef4444; border: none; font-weight: 700; font-size: 1.1rem; color: white;">
+                    Secure Authorization
+                </button>
+                <div style="text-align: center; margin-top: 24px;">
+                    <a href="index.html"
+                        style="color: #64748b; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                        <i data-lucide="arrow-left" style="width: 16px;"></i> Return to Public Interface
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

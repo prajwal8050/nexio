@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue History – Nexio</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .history-container {
+            padding: 120px 24px 60px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .history-table-card {
+            background: var(--white);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            margin-top: 40px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 20px 24px;
+            text-align: left;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        th {
+            background: #F8FAFC;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .status-pill {
+            padding: 4px 12px;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-waiting {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .status-completed {
+            background: #DCFCE7;
+            color: #166534;
+        }
+    </style>
+</head>
+
+<body style="background: var(--bg-color);">
+
+    <nav id="navbar" class="scrolled">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <i data-lucide="layers"></i>
+                <span>Nexio</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="services.html">Services</a></li>
+                <li><a href="history.html" class="active">History</a></li>
+            </ul>
+            <div class="nav-btns" id="navAuthBtns"></div>
+        </div>
+    </nav>
+
+    <div class="history-container">
+        <header>
+            <h1>Queue <span class="text-gradient">History</span></h1>
+            <p style="color: var(--text-secondary);">Track your past and present service visits.</p>
+        </header>
+
+        <div class="history-table-card">
+            <table id="historyTable">
+                <thead>
+                    <tr>
+                        <th>Service Name</th>
+                        <th>Queue No.</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody">
+                    <!-- Dynamic Content -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Simple Footer -->
+        <footer style="margin-top: 80px; padding: 40px 0; border-top: 1px solid #E2E8F0; text-align: center;">
+            <div
+                style="display: flex; justify-content: center; gap: 40px; font-size: 0.9rem; color: var(--text-secondary);">
+                <a href="index.html">Home</a>
+                <a href="services.html">Services</a>
+                <a href="agent_login.html" style="font-weight: 600;">Agent Login</a>
+                <a href="admin_login.html" style="font-weight: 600;">Admin Login</a>
+            </div>
+        </footer>
+    </div>
+
+    <script src="js/script.js"></script>
+    <script>
+        lucide.createIcons();
+
+        async function loadHistory() {
+            try {
+                const response = await fetch('/api/queues/history');
+                if (handleAuthError(response)) return;
+                if (response.ok) {
+                    const data = await response.json();
+                    const body = document.getElementById('historyBody');
+                    body.innerHTML = data.map(ticket => `
+                        <tr>
+                            <td>
+                                <div style="font-weight: 600;">${ticket.service.name}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-muted);">${ticket.service.category}</div>
+                            </td>
+                            <td style="font-family: 'Outfit'; font-weight: 700; color: var(--primary);">${ticket.queueNumber}</td>
+                            <td>${new Date(ticket.bookingDate).toLocaleDateString()}</td>
+                            <td>
+                                <span class="status-pill status-${ticket.status.toLowerCase()}">${ticket.status}</span>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        loadHistory();
+    </script>
+</body>
+
+</html>

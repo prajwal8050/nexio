@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Dashboard – Nexio</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: var(--white);
+            border-right: 1px solid #E2E8F0;
+            padding: 40px 24px;
+        }
+
+        .dashboard-content {
+            padding: 40px 60px;
+        }
+
+        .agent-card {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 24px;
+        }
+
+        .queue-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .queue-item:last-child {
+            border-bottom: none;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(20px);
+        }
+    </style>
+</head>
+
+<body style="background: var(--bg-color);">
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <a href="index.html" class="logo"><i data-lucide="layers"></i><span>Nexio Agent</span></a>
+            <div style="margin-top: 40px;">
+                <h3>Manage Services</h3>
+                <div id="serviceList" style="margin-top: 16px;"></div>
+            </div>
+            <div
+                style="margin-top: 24px; padding: 20px; background: #F8FAFC; border-radius: 16px; border: 1px solid #E2E8F0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span style="font-weight: 600; font-size: 0.9rem;">Demo Mode</span>
+                    <label class="switch" style="position: relative; display: inline-block; width: 44px; height: 24px;">
+                        <input type="checkbox" id="demoModeToggle" onchange="toggleDemoMode()"
+                            style="opacity: 0; width: 0; height: 0;">
+                        <span class="slider"
+                            style="position: absolute; cursor: pointer; inset: 0; background-color: #CBD5E1; transition: .4s; border-radius: 24px;"></span>
+                    </label>
+                </div>
+                <p style="font-size: 0.75rem; color: var(--text-secondary);">Auto-advances queue every 5s</p>
+            </div>
+            <div style="margin-top: auto; padding-top: 20px;">
+                <button onclick="logout()" class="btn btn-white" style="width: 100%;">Log Out</button>
+            </div>
+        </aside>
+
+        <main class="dashboard-content">
+            <header
+                style="margin-bottom: 40px; display: flex; flex-direction: column; align-items: flex-start; gap: 20px;">
+                <div>
+                    <h1>Agent <span class="text-gradient">Console</span></h1>
+                    <p id="activeServiceTitle" style="color: var(--text-secondary);">Select a service from the sidebar
+                        to manage the live queue.</p>
+                </div>
+                <button class="btn btn-primary" onclick="showAddServiceModal()">
+                    <i data-lucide="plus-circle" style="width:16px; height:16px; margin-right:8px;"></i> Add New Service
+                </button>
+            </header>
+
+            <div id="queueContainer">
+                <div class="agent-card" style="text-align: center; color: var(--text-secondary); padding: 60px;">
+                    <i data-lucide="mouse-pointer-2" style="width: 48px; height: 48px; margin-bottom: 16px;"></i>
+                    <p>Click on a service from the sidebar to view its active queue or add people manually.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit Service Modal -->
+    <div id="serviceModal"
+        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:1000;">
+        <div style="background:white; padding:40px; border-radius:32px; width:400px; box-shadow: var(--shadow-xl);">
+            <h2 id="modalTitle">Service Details</h2>
+            <div style="margin-top:24px;">
+                <div style="margin-bottom:15px;">
+                    <label>Service Name</label>
+                    <input id="sName" class="form-control" placeholder="e.g. VIP Lounge">
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label>Avg. Wait Time (min)</label>
+                    <input id="sWait" type="number" class="form-control" placeholder="15">
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label>Category</label>
+                    <input id="sCat" class="form-control" placeholder="Retail, Health, etc.">
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label>Image URL</label>
+                    <input id="sImg" class="form-control" placeholder="https://unsplash.com/...">
+                </div>
+                <button class="btn btn-primary" onclick="saveService()" style="width:100%;">Save Service</button>
+                <button class="btn btn-white" onclick="closeModal('serviceModal')"
+                    style="width:100%; margin-top:10px;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual Join Modal -->
+    <div id="manualModal"
+        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:1000;">
+        <div style="background:white; padding:40px; border-radius:32px; width:400px; box-shadow: var(--shadow-xl);">
+            <h2>Walk-in Customer</h2>
+            <div style="margin-top:24px;">
+                <div style="margin-bottom:15px;">
+                    <label>Customer Name</label>
+                    <input id="mName" class="form-control" placeholder="Enter name">
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label>Phone Number</label>
+                    <input id="mPhone" class="form-control" placeholder="Enter phone">
+                </div>
+                <button class="btn btn-secondary" onclick="addManualQueue()" style="width:100%;">Add to Queue</button>
+                <button class="btn btn-white" onclick="closeModal('manualModal')"
+                    style="width:100%; margin-top:10px;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+    <script>
+        lucide.createIcons();
+        let currentServiceId = null;
+
+        async function loadSidebar() {
+            const res = await fetch('/api/services');
+            const services = await res.json();
+            const list = document.getElementById('serviceList');
+            list.innerHTML = services.map(s => `
+                <div onclick="selectService(${s.id}, '${s.name}')" style="padding:12px; cursor:pointer; border-radius:12px; margin-bottom:8px; background:${currentServiceId == s.id ? 'var(--primary)' : 'transparent'}; color:${currentServiceId == s.id ? 'white' : 'inherit'};">
+                    ${s.name}
+                </div>
+            `).join('');
+        }
+
+        async function selectService(id, name) {
+            currentServiceId = id;
+            document.getElementById('activeServiceTitle').innerText = `Managing: ${name}`;
+            loadSidebar();
+            loadQueue(id);
+        }
+
+        async function loadQueue(id) {
+            const res = await fetch(`/api/agent/queues?serviceId=${id}`);
+            const queue = await res.json();
+            const container = document.getElementById('queueContainer');
+
+            let queueContent = '';
+            if (queue.length === 0) {
+                queueContent = '<div class="agent-card">No one is currently in the queue.</div>';
+            } else {
+                queueContent = `
+                    <div class="agent-card">
+                        <h3>Active Tickets (${queue.length})</h3>
+                        <div style="margin-top:20px;">
+                            ${queue.map(t => `
+                                <div class="queue-item">
+                                    <div>
+                                        <span style="font-weight:800; color:var(--primary); font-size:1.2rem;">${t.queueNumber}</span>
+                                        <div style="font-size:0.9rem; color:var(--text-secondary);">${t.user ? t.user.name : 'Guest User'} | ${t.bookingDate ? new Date(t.bookingDate).toLocaleTimeString() : '---'}</div>
+                                    </div>
+                                    <button class="btn btn-primary" onclick="completeTicket(${t.id})" style="padding:8px 16px;">Complete</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                    <div class="agent-card" style="padding: 24px;">
+                        <h4 style="margin-bottom: 16px;">Queue Selection</h4>
+                        <button class="btn btn-secondary" onclick="showManualJoinModal()" style="width: 100%;">+ Add Walk-in Customer</button>
+                    </div>
+                    <div class="agent-card" style="padding: 24px; border: 2px dashed var(--primary);">
+                        <h4 style="margin-bottom: 16px;"><i data-lucide="play" style="width: 16px; display: inline-block; vertical-align: middle; margin-right: 8px;"></i> Simulation Mode</h4>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="number" id="seedCount" class="form-control" value="10" style="width: 80px;">
+                            <button class="btn btn-white" onclick="seedSimulation()" style="flex-grow: 1;">Seed Queue</button>
+                            <button class="btn btn-primary" onclick="advanceSimulation()" style="flex-grow: 1;">NEXT PERSON &rarr;</button>
+                        </div>
+                    </div>
+                </div>
+                ${queueContent}
+            `;
+            lucide.createIcons();
+        }
+
+        function showAddServiceModal() {
+            document.getElementById('serviceModal').style.display = 'flex';
+        }
+
+        function showManualJoinModal() {
+            document.getElementById('manualModal').style.display = 'flex';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        async function saveService() {
+            const data = {
+                name: document.getElementById('sName').value,
+                estimatedWaitTime: document.getElementById('sWait').value,
+                category: document.getElementById('sCat').value,
+                imageUrl: document.getElementById('sImg').value || 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&q=80&w=800'
+            };
+
+            const res = await fetch('/api/agent/service/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                alert("Service added successfully!");
+                closeModal('serviceModal');
+                loadSidebar();
+            }
+        }
+
+        async function addManualQueue() {
+            const name = document.getElementById('mName').value;
+            const phone = document.getElementById('mPhone').value;
+
+            const res = await fetch(`/api/agent/manual-join?name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&serviceId=${currentServiceId}`, {
+                method: 'POST'
+            });
+
+            if (res.ok) {
+                alert("Walk-in customer added to queue!");
+                closeModal('manualModal');
+                loadQueue(currentServiceId);
+            }
+        }
+
+        async function completeTicket(tid) {
+            const res = await fetch(`/api/agent/complete?ticketId=${tid}`, { method: 'POST' });
+            if (res.ok) {
+                alert("Ticket processed!");
+                loadQueue(currentServiceId);
+            }
+        }
+
+        async function seedSimulation() {
+            const count = document.getElementById('seedCount').value;
+            const res = await fetch(`/api/agent/simulation/seed?serviceId=${currentServiceId}&count=${count}`, { method: 'POST' });
+            if (res.ok) {
+                alert(`Simulation started with ${count} people!`);
+                loadQueue(currentServiceId);
+            }
+        }
+
+        let demoInterval = null;
+
+        function toggleDemoMode() {
+            const isEnabled = document.getElementById('demoModeToggle').checked;
+            const slider = document.querySelector('.slider');
+            slider.style.backgroundColor = isEnabled ? 'var(--secondary)' : '#CBD5E1';
+
+            if (isEnabled) {
+                if (!currentServiceId) {
+                    alert("Select a service first!");
+                    document.getElementById('demoModeToggle').checked = false;
+                    slider.style.backgroundColor = '#CBD5E1';
+                    return;
+                }
+                demoInterval = setInterval(async () => {
+                    await advanceSimulation();
+                }, 5000);
+            } else {
+                clearInterval(demoInterval);
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+
+        loadSidebar();
+    </script>
+</body>
+
+</html>
